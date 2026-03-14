@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shelby Storage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0b0d;
+      --surface: #13151a;
+      --surface2: #1a1d24;
+      --surface3: #20242e;
+      --border: #252830;
+      --border2: #2e3340;
+      --text: #e8eaf0;
+      --text2: #8b909e;
+      --text3: #454a58;
+      --accent: #4f7ef5;
+      --accent2: #7c5cf5;
+      --accent-bg: rgba(79,126,245,0.1);
+      --success: #2ed88a;
+      --success-bg: rgba(46,216,138,0.08);
+      --danger: #f56565;
+      --danger-bg: rgba(245,101,101,0.08);
+      --warning: #f5a623;
+      --warning-bg: rgba(245,166,35,0.08);
+      --radius: 10px;
+      --radius-lg: 14px;
+      --mono: 'IBM Plex Mono', monospace;
+    }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(79,126,245,0.06), transparent);
+    }
+    .app { max-width: 800px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+    /* HEADER */
+    .header { display: flex; align-items: center; gap: 14px; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .logo { width: 42px; height: 42px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .header-text h1 { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
+    .header-text p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+    .header-right { margin-right: auto; display: flex; align-items: center; gap: 10px; }
+    .network-badge { background: var(--success-bg); color: var(--success); font-size: 12px; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(46,216,138,0.2); font-family: var(--mono); }
+
+    /* WALLET SECTION */
+    #walletSection { margin-bottom: 1.5rem; }
+
+    .wallet-connect-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      text-align: center;
+    }
+    .wallet-connect-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .wallet-connect-card p { font-size: 13px; color: var(--text2); margin-bottom: 1.5rem; line-height: 1.6; }
+    .wallet-options { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .wallet-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: inherit; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .wallet-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .wallet-btn img { width: 22px; height: 22px; border-radius: 6px; }
+    .wallet-btn .wallet-icon { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+    .wallet-connected-bar {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      align-items: center;
+      gap: 12px;
+    }
+    .wallet-connected-bar.show { display: flex; }
+    .wallet-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; box-shadow: 0 0 8px var(--success); }
+    .wallet-address { font-family: var(--mono); font-size: 13px; color: var(--text2); flex: 1; }
+    .wallet-balance { font-size: 13px; color: var(--text2); }
+    .disconnect-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; color: var(--text3); font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .disconnect-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+    /* NOTICE */
+    .notice { background: var(--warning-bg); border: 1px solid rgba(245,166,35,0.2); border-radius: var(--radius); padding: 11px 14px; font-size: 13px; color: var(--warning); margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+    .notice a { color: inherit; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px; margin-bottom: 1.5rem; }
+    .tab { flex: 1; padding: 9px; border: none; border-radius: 7px; background: transparent; color: var(--text2); font-family: inherit; font-size: 14px; cursor: pointer; transition: all 0.18s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+    .tab:hover:not(.active) { color: var(--text); }
+
+    /* PANELS */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* DROP ZONE */
+    .drop-zone { border: 1.5px dashed var(--border2); border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--surface); }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--surface2); }
+    .drop-icon { font-size: 34px; margin-bottom: 12px; display: block; }
+    .drop-zone h2 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .drop-zone p { font-size: 13px; color: var(--text2); }
+    .browse-btn { margin-top: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 9px 22px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
+    .browse-btn:hover { opacity: 0.85; }
+    input[type="file"] { display: none; }
+
+    /* FILE LIST */
+    .section-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin: 1.5rem 0 0.75rem; }
+    .file-list { display: flex; flex-direction: column; gap: 8px; }
+    .file-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+    .file-ext { width: 38px; height: 38px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--accent); flex-shrink: 0; font-family: var(--mono); }
+    .file-info { flex: 1; min-width: 0; }
+    .file-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .file-hash { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pb-track { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 7px; }
+    .pb-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.25s; width: 0%; }
+    .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; flex-shrink: 0; font-family: var(--mono); }
+    .badge-ready   { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+    .badge-loading { background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(79,126,245,0.25); }
+    .badge-done    { background: var(--success-bg); color: var(--success); border: 1px solid rgba(46,216,138,0.2); }
+    .badge-error   { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(245,101,101,0.2); }
+    .remove-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 4px; transition: color 0.15s; }
+    .remove-btn:hover { color: var(--danger); }
+
+    /* BUTTONS */
+    .upload-btn { width: 100%; margin-top: 1.5rem; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .upload-btn:hover { opacity: 0.88; }
+    .upload-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* SUCCESS */
+    .success-banner { display: none; background: var(--success-bg); border: 1px solid rgba(46,216,138,0.2); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; color: var(--success); margin-top: 1rem; align-items: center; gap: 8px; }
+
+    /* DOWNLOAD / LIST */
+    .input-group { display: flex; gap: 10px; margin-bottom: 1rem; }
+    .text-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; color: var(--text); font-family: inherit; font-size: 14px; transition: border-color 0.2s; direction: ltr; }
+    .text-input:focus { outline: none; border-color: var(--accent); }
+    .text-input::placeholder { color: var(--text3); }
+    .action-btn { padding: 10px 20px; background: var(--accent); border: none; border-radius: var(--radius); color: #fff; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.18s; white-space: nowrap; }
+    .action-btn:hover { opacity: 0.88; }
+    .action-btn.secondary { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); }
+    .action-btn.secondary:hover { border-color: var(--accent); color: var(--accent); opacity: 1; }
+    .status-msg { font-size: 13px; color: var(--text2); padding: 10px 0; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    .blobs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .blobs-table th { text-align: right; padding: 8px 12px; color: var(--text3); font-weight: 500; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; }
+    .blobs-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--text2); }
+    .blobs-table tr:last-child td { border-bottom: none; }
+    .blobs-table tr:hover td { background: var(--surface2); }
+    .blob-name-cell { color: var(--text); font-weight: 500; }
+    .hash-cell { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+    .dl-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; color: var(--accent); font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .dl-btn:hover { background: var(--accent-bg); border-color: var(--accent); }
+
+    /* EMPTY / SPINNER */
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 14px; }
+    .empty-icon { font-size: 30px; margin-bottom: 12px; display: block; }
+    .spinner { width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* LOCKED STATE */
+    .locked-overlay { display: none; }
+    .locked-overlay.show { display: block; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header class="header">
+    <div class="logo">📦</div>
+    <div class="header-text">
+      <h1>Shelby Storage</h1>
+      <p>تخزين لامركزي على بلوكشين Aptos</p>
+    </div>
+    <div class="header-right">
+      <span class="network-badge">Shelbynet</span>
+    </div>
+  </header>
+
+  <!-- WALLET SECTION -->
+  <div id="walletSection">
+    <!-- حالة: غير متصل -->
+    <div id="walletConnectCard" class="wallet-connect-card">
+      <h2>🔐 اتصل بمحفظتك</h2>
+      <p>تحتاج إلى محفظة Aptos برصيد اختبار على شبكة Devnet للبدء.<br>
+      احصل على رصيد مجاني من <a href="https://aptos.dev/en/network/faucet" target="_blank" style="color:var(--accent)">Aptos Faucet</a>.</p>
+      <div class="wallet-options">
+        <button class="wallet-btn" onclick="connectWallet('petra')">
+          <div class="wallet-icon" style="background:#000">🔷</div>
+          Petra
+        </button>
+        <button class="wallet-btn" onclick="connectWallet('martian')">
+          <div class="wallet-icon" style="background:#1a1a2e">🦾</div>
+          Martian
+        </button>
+        <button class="wallet-btn" onclick="connectWallet('pontem')">
+          <div class="wallet-icon" style="background:#0d1117">🌉</div>
+          Pontem
+        </button>
+        <button class="wallet-btn" onclick="connectWallet('any')">
+          <div class="wallet-icon" style="background:var(--surface3)">🌐</div>
+          أي محفظة
+        </button>
+      </div>
+    </div>
+
+    <!-- حالة: متصل -->
+    <div id="walletConnectedBar" class="wallet-connected-bar">
+      <div class="wallet-dot"></div>
+      <span id="walletAddressText" class="wallet-address">—</span>
+      <span id="walletBalanceText" class="wallet-balance"></span>
+      <button class="disconnect-btn" onclick="disconnectWallet()">قطع الاتصال</button>
+    </div>
+  </div>
+
+  <!-- المحتوى الرئيسي (مخفي حتى الاتصال) -->
+  <div id="mainContent" style="display:none">
+
+    <div class="notice">
+      ⚠️ <div>احصل على رصيد اختبار مجاني من
+        <a href="https://aptos.dev/en/network/faucet" target="_blank">Aptos Faucet</a>
+        أو من <a href="https://docs.shelby.xyz/apis/faucet/shelbyusd" target="_blank">Shelby Faucet</a>.
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('upload')">⬆️ رفع ملف</button>
+      <button class="tab" onclick="switchTab('download')">⬇️ تحميل ملف</button>
+      <button class="tab" onclick="switchTab('list')">📋 ملفاتي</button>
+    </div>
+
+    <!-- UPLOAD -->
+    <div id="panel-upload" class="panel active">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <span class="drop-icon">⬆️</span>
+        <h2>اسحب وأفلت ملفاتك هنا</h2>
+        <p>يدعم جميع أنواع الملفات · الحد الأقصى 100 MB</p>
+        <button class="browse-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">📂 اختر ملفات</button>
+        <input type="file" id="fileInput" multiple>
+      </div>
+      <div id="fileSection" style="display:none">
+        <p class="section-label">الملفات المحددة</p>
+        <div class="file-list" id="fileList"></div>
+        <div class="success-banner" id="successBanner">✅ تم رفع جميع الملفات بنجاح إلى Shelby!</div>
+        <button class="upload-btn" id="uploadBtn" onclick="startUpload()">
+          <span id="uploadBtnText">⬆️ رفع إلى Shelby</span>
+        </button>
+      </div>
+      <div id="emptyHint" class="empty-state" style="margin-top:1rem;">
+        <span class="empty-icon">📂</span>لا توجد ملفات محددة بعد
+      </div>
+    </div>
+
+    <!-- DOWNLOAD -->
+    <div id="panel-download" class="panel">
+      <p style="font-size:14px;color:var(--text2);margin-bottom:1.25rem;">أدخل اسم الملف الذي تريد تحميله من Shelby.</p>
+      <div class="input-group">
+        <input type="text" class="text-input" id="dlBlobName" placeholder="مثال: files/photo.jpg" />
+        <button class="action-btn" onclick="handleDownload()">⬇️ تحميل</button>
+      </div>
+      <div id="dlStatus" class="status-msg" style="display:none;"></div>
+    </div>
+
+    <!-- LIST -->
+    <div id="panel-list" class="panel">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;">
+        <input type="text" class="text-input" id="listAddress" placeholder="عنوان الحساب (اتركه فارغاً لحسابك)" />
+        <button class="action-btn secondary" onclick="loadBlobs()">🔄 تحديث</button>
+      </div>
+      <div id="blobsContainer">
+        <div class="empty-state"><span class="empty-icon">📋</span>اضغط "تحديث" لعرض ملفاتك</div>
+      </div>
+    </div>
+
+  </div><!-- /mainContent -->
+
+</div>
+
+<script>
+// ============================================================
+// حالة المحفظة
+// ============================================================
+let walletAddress = null;
+let walletProvider = null;
+
+function shortAddr(addr) {
+  return addr ? addr.slice(0, 6) + '…' + addr.slice(-4) : '';
+}
+
+// ============================================================
+// اكتشاف المحافظ — Aptos Wallet Standard
+// ============================================================
+function getRegisteredWallets() {
+  if (window.aptos && window.aptos.wallets) return Array.from(window.aptos.wallets);
+  if (window.aptosWallets) return Array.from(window.aptosWallets);
+  return [];
+}
+
+function findWalletByName(name) {
+  return getRegisteredWallets().find(w => w.name && w.name.toLowerCase().includes(name.toLowerCase())) || null;
+}
+
+// ============================================================
+// اتصال المحفظة
+// ============================================================
+async function connectWallet(id) {
+  try {
+    let address = null;
+    const nameMap = { petra: 'Petra', martian: 'Martian', pontem: 'Pontem' };
+
+    if (id === 'any') {
+      const all = getRegisteredWallets();
+      if (!all.length) {
+        alert('لم يتم اكتشاف أي محفظة Aptos. يرجى تثبيت Petra أو Martian من متجر الإضافات.');
+        return;
+      }
+      const w = all[0];
+      const res = await w.features['aptos:connect'].connect();
+      address = res?.address || res?.account?.address;
+      walletProvider = w;
+    } else {
+      const w = findWalletByName(nameMap[id] || id);
+      if (!w) {
+        alert('محفظة ' + (nameMap[id] || id) + ' غير مثبتة. يرجى تثبيتها من متجر الإضافات أولاً.');
+        return;
+      }
+      const res = await w.features['aptos:connect'].connect();
+      address = res?.address || res?.account?.address;
+      walletProvider = w;
+    }
+
+    if (!address) throw new Error('لم يتم الحصول على العنوان');
+    walletAddress = typeof address === 'string' ? address : address.toString();
+    onWalletConnected();
+
+  } catch (err) {
+    if (err.code === 4001 || (err.message && (err.message.includes('reject') || err.message.includes('cancel') || err.message.includes('User rejected')))) {
+      // المستخدم رفض
+    } else {
+      alert('فشل الاتصال: ' + (err.message || err));
+    }
+  }
+}
+
+function onWalletConnected() {
+  document.getElementById('walletConnectCard').style.display = 'none';
+  const bar = document.getElementById('walletConnectedBar');
+  bar.classList.add('show');
+  document.getElementById('walletAddressText').textContent = shortAddr(walletAddress);
+  document.getElementById('mainContent').style.display = 'block';
+
+  // تعيين العنوان تلقائياً في حقل القائمة
+  document.getElementById('listAddress').value = walletAddress;
+
+  fetchBalance();
+}
+
+async function fetchBalance() {
+  try {
+    if (!walletProvider || !walletAddress) return;
+    // بعض المحافظ تدعم getBalance مباشرة
+    if (walletProvider.getBalance) {
+      const bal = await walletProvider.getBalance();
+      document.getElementById('walletBalanceText').textContent = bal ? `${(bal / 1e8).toFixed(4)} APT` : '';
+    }
+  } catch (_) {}
+}
+
+function disconnectWallet() {
+  try { if (walletProvider?.disconnect) walletProvider.disconnect(); } catch (_) {}
+  walletAddress = null;
+  walletProvider = null;
+  document.getElementById('walletConnectCard').style.display = 'block';
+  document.getElementById('walletConnectedBar').classList.remove('show');
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('walletBalanceText').textContent = '';
+}
+
+// ============================================================
+// رفع الملفات — يرسل العنوان مع الطلب
+// ============================================================
+let files = [];
+
+function formatSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+function getExt(name) {
+  const p = name.split('.'); return p.length > 1 ? p.pop().toUpperCase().slice(0, 4) : 'FILE';
+}
+
+window.switchTab = function(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['upload', 'download', 'list'][i] === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+};
+
+function addFiles(newFiles) {
+  files = files.concat(Array.from(newFiles).map(f => ({ file: f, status: 'ready', progress: 0, merkleRoot: '' })));
+  renderList();
+  document.getElementById('successBanner').style.display = 'none';
+  document.getElementById('uploadBtn').disabled = false;
+  document.getElementById('uploadBtnText').textContent = '⬆️ رفع إلى Shelby';
+}
+
+function renderList() {
+  const list = document.getElementById('fileList');
+  const section = document.getElementById('fileSection');
+  const hint = document.getElementById('emptyHint');
+  if (!files.length) { section.style.display = 'none'; hint.style.display = 'block'; return; }
+  section.style.display = 'block'; hint.style.display = 'none';
+  const labels = { ready: 'جاهز', loading: 'جاري الرفع…', done: 'تم ✓', error: 'خطأ' };
+  list.innerHTML = files.map((f, i) => `
+    <div class="file-card">
+      <div class="file-ext">${getExt(f.file.name)}</div>
+      <div class="file-info">
+        <div class="file-name">${f.file.name}</div>
+        <div class="file-meta">${formatSize(f.file.size)}</div>
+        ${f.merkleRoot ? `<div class="file-hash">🔗 ${f.merkleRoot.slice(0, 24)}…</div>` : ''}
+        <div class="pb-track" style="display:${f.status === 'loading' ? 'block' : 'none'}">
+          <div class="pb-fill" id="pb-fill-${i}" style="width:${f.progress}%"></div>
+        </div>
+      </div>
+      <span class="badge badge-${f.status}">${labels[f.status] || f.status}</span>
+      ${f.status !== 'loading' ? `<button class="remove-btn" onclick="removeFile(${i})">×</button>` : ''}
+    </div>`).join('');
+}
+
+window.removeFile = function(i) { files.splice(i, 1); renderList(); };
+
+window.startUpload = async function() {
+  if (!files.length) return;
+  if (!walletAddress) { alert('يرجى الاتصال بمحفظتك أولاً'); return; }
+
+  const btn = document.getElementById('uploadBtn');
+  const btnText = document.getElementById('uploadBtnText');
+  btn.disabled = true;
+  btnText.innerHTML = '<div class="spinner"></div> جاري الرفع…';
+
+  for (let i = 0; i < files.length; i++) {
+    if (files[i].status === 'done') continue;
+    files[i].status = 'loading'; files[i].progress = 0; renderList();
+
+    let prog = 0;
+    const iv = setInterval(() => {
+      prog = Math.min(prog + 15, 85);
+      const fill = document.getElementById('pb-fill-' + i);
+      if (fill) fill.style.width = prog + '%';
+    }, 200);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', files[i].file);
+      formData.append('address', walletAddress); // إرسال العنوان مع الطلب
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      clearInterval(iv);
+      if (!res.ok) throw new Error(data.error || 'فشل الرفع');
+      files[i].status = 'done';
+      files[i].progress = 100;
+      files[i].merkleRoot = data.merkleRoot || '';
+    } catch (err) {
+      clearInterval(iv);
+      files[i].status = 'error';
+      console.error(err);
+    }
+    renderList();
+  }
+  btnText.textContent = '✅ تم الرفع!';
+  document.getElementById('successBanner').style.display = 'flex';
+};
+
+window.handleDownload = async function() {
+  const name = document.getElementById('dlBlobName').value.trim();
+  const status = document.getElementById('dlStatus');
+  if (!name) { status.textContent = '⚠️ أدخل اسم الملف'; status.style.display = 'block'; return; }
+  status.textContent = '⏳ جاري التحميل…'; status.style.display = 'block';
+  try {
+    const res = await fetch('/api/download/' + encodeURIComponent(name));
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name.split('/').pop(); a.click();
+    URL.revokeObjectURL(url);
+    status.textContent = '✅ تم تحميل الملف بنجاح!';
+  } catch (err) {
+    status.textContent = '❌ ' + err.message;
+  }
+};
+
+window.loadBlobs = async function() {
+  const address = document.getElementById('listAddress').value.trim() || walletAddress;
+  const container = document.getElementById('blobsContainer');
+  container.innerHTML = '<div class="empty-state"><span class="empty-icon">⏳</span>جاري التحميل…</div>';
+  try {
+    const url = '/api/list' + (address ? '?address=' + encodeURIComponent(address) : '');
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    const blobs = data.blobs || [];
+    if (!blobs.length) {
+      container.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span>لا توجد ملفات مخزنة</div>';
+      return;
+    }
+    container.innerHTML = `<div class="table-wrap"><table class="blobs-table">
+      <thead><tr><th>الاسم</th><th>الحجم</th><th>Merkle Root</th><th></th></tr></thead>
+      <tbody>${blobs.map(b => `
+        <tr>
+          <td class="blob-name-cell">${b.name || '—'}</td>
+          <td>${b.size ? formatSize(b.size) : '—'}</td>
+          <td class="hash-cell">${b.merkleRoot ? b.merkleRoot.slice(0, 14) + '…' : '—'}</td>
+          <td><button class="dl-btn" onclick="quickDl('${b.name}')">⬇️ تحميل</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>`;
+  } catch (err) {
+    container.innerHTML = `<div class="empty-state"><span class="empty-icon">❌</span>${err.message}</div>`;
+  }
+};
+
+window.quickDl = function(name) {
+  document.getElementById('dlBlobName').value = name;
+  switchTab('download');
+  handleDownload();
+};
+
+// Drag & Drop
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); addFiles(e.dataTransfer.files); });
+document.getElementById('fileInput').addEventListener('change', e => addFiles(e.target.files));
+</script>
+</body>
+</html>
