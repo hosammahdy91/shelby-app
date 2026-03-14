@@ -305,56 +305,44 @@ function shortAddr(addr) {
 }
 
 // ============================================================
-// اكتشاف المحافظ — Aptos Wallet Standard
+// اتصال المحفظة — يدعم Petra و window.aptos
 // ============================================================
-function getRegisteredWallets() {
-  if (window.aptos && window.aptos.wallets) return Array.from(window.aptos.wallets);
-  if (window.aptosWallets) return Array.from(window.aptosWallets);
-  return [];
+function detectProvider(id) {
+  if (id === 'petra' || id === 'any') {
+    if (window.petra) return window.petra;
+  }
+  if (id === 'martian') return window.martian || null;
+  if (id === 'pontem')  return window.pontem  || null;
+  // fallback: أي محفظة متاحة
+  return window.petra || window.martian || window.pontem || null;
 }
 
-function findWalletByName(name) {
-  return getRegisteredWallets().find(w => w.name && w.name.toLowerCase().includes(name.toLowerCase())) || null;
-}
-
-// ============================================================
-// اتصال المحفظة
-// ============================================================
 async function connectWallet(id) {
   try {
-    let address = null;
-    const nameMap = { petra: 'Petra', martian: 'Martian', pontem: 'Pontem' };
+    const provider = detectProvider(id);
+    if (!provider) {
+      alert('لم يتم اكتشاف أي محفظة Aptos. يرجى تثبيت Petra من متجر إضافات Chrome.');
+      return;
+    }
 
-    if (id === 'any') {
-      const all = getRegisteredWallets();
-      if (!all.length) {
-        alert('لم يتم اكتشاف أي محفظة Aptos. يرجى تثبيت Petra أو Martian من متجر الإضافات.');
-        return;
-      }
-      const w = all[0];
-      const res = await w.features['aptos:connect'].connect();
-      address = res?.address || res?.account?.address;
-      walletProvider = w;
-    } else {
-      const w = findWalletByName(nameMap[id] || id);
-      if (!w) {
-        alert('محفظة ' + (nameMap[id] || id) + ' غير مثبتة. يرجى تثبيتها من متجر الإضافات أولاً.');
-        return;
-      }
-      const res = await w.features['aptos:connect'].connect();
-      address = res?.address || res?.account?.address;
-      walletProvider = w;
+    const response = await provider.connect();
+    // Petra قد تُرجع { address } أو { publicKey } أو address مباشرة
+    let address = response?.address || response?.publicKey || response;
+    if (address && typeof address === 'object') {
+      address = address.toString ? address.toString() : JSON.stringify(address);
     }
 
     if (!address) throw new Error('لم يتم الحصول على العنوان');
-    walletAddress = typeof address === 'string' ? address : address.toString();
+    walletAddress = address;
+    walletProvider = provider;
     onWalletConnected();
 
   } catch (err) {
-    if (err.code === 4001 || (err.message && (err.message.includes('reject') || err.message.includes('cancel') || err.message.includes('User rejected')))) {
-      // المستخدم رفض
+    const msg = err?.message || String(err);
+    if (msg.includes('reject') || msg.includes('cancel') || msg.includes('User rejected') || err?.code === 4001) {
+      // المستخدم رفض — لا نعرض خطأ
     } else {
-      alert('فشل الاتصال: ' + (err.message || err));
+      alert('فشل الاتصال: ' + msg);
     }
   }
 }
